@@ -1,5 +1,6 @@
 package com.yagodaoud.cryptotrack.presentation
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,12 +10,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
@@ -56,9 +61,26 @@ class MainActivity : ComponentActivity() {
     fun ObserveCryptoPrices(viewModel: CryptoViewModel) {
         val cryptoList by viewModel.cryptoList.collectAsState()
 
-        Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
-            LazyColumn {
-                cryptoList?.let { list ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+                .padding(16.dp)
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                item {
+                    Text(
+                        text = "Crypto Track",
+                        color = Color.White,
+                        style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+
+                cryptoList.let { list ->
                     items(list.size) { index ->
                         CryptoItem(list[index])
                     }
@@ -67,14 +89,22 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @SuppressLint("DefaultLocale")
     @Composable
     fun CryptoItem(crypto: CryptoCurrency) {
-        val price = crypto.quote["USD"]?.price ?: "N/A"
+        val price = crypto.quote["USD"]?.price?.let {
+            if (it >= 1) {
+                String.format("%,.2f", it)
+            } else {
+                String.format("%,1.4f", it)
+            }
+        } ?: "N/A"
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
+                .clip(RoundedCornerShape(8.dp))
                 .background(Color.DarkGray)
                 .padding(8.dp)
         ) {
