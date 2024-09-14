@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
+import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.Text
 import com.yagodaoud.cryptotrack.data.api.CoinMarketCapAPI
 import com.yagodaoud.cryptotrack.data.model.CryptoCurrency
@@ -60,6 +62,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun ObserveCryptoPrices(viewModel: CryptoViewModel) {
         val cryptoList by viewModel.cryptoList.collectAsState()
+        val isLoading by viewModel.isLoading.collectAsState()
 
         Box(
             modifier = Modifier
@@ -67,25 +70,44 @@ class MainActivity : ComponentActivity() {
                 .background(Color.Black)
                 .padding(16.dp)
         ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                item {
-                    Text(
-                        text = "Crypto Track",
-                        color = Color.White,
-                        style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-
-                cryptoList.let { list ->
-                    items(list.size) { index ->
-                        CryptoItem(list[index])
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    item {
+                        ClickableHeader(viewModel)
+                    }
+                    cryptoList?.let { list ->
+                        items(list.size) { index ->
+                            CryptoItem(list[index])
+                        }
                     }
                 }
             }
+        }
+    }
+
+    @Composable
+    fun ClickableHeader(viewModel: CryptoViewModel) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clickable {
+                    viewModel.fetchCryptoPrices("e77bacb5-8443-4bc7-8f5b-e0e26b497abd", "USD")
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Crypto Track",
+                color = Color.White,
+                style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            )
         }
     }
 
