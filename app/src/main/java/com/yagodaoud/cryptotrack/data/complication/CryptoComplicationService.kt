@@ -19,6 +19,9 @@ import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
+import java.util.Locale
+
 
 //import androidx.wear.complications.ComplicationManager
 
@@ -48,7 +51,11 @@ class CryptoComplicationService : ComplicationProviderService() {
                 null
             }
 
-            val formattedPrice = price?.let { DecimalFormat("#.##").format(it) } ?: "Unavailable"
+            val decimalFormatSymbols = DecimalFormatSymbols(Locale.US).apply {
+                groupingSeparator = '.'
+            }
+            val decimalFormat = DecimalFormat("#,###", decimalFormatSymbols)
+            val formattedPrice = decimalFormat.format(price)
 
             if (request.complicationType == ComplicationType.SHORT_TEXT) {
                 val complicationData = ShortTextComplicationData.Builder(
